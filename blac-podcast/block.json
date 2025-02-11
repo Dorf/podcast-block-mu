@@ -1,0 +1,17 @@
+{
+	"apiVersion": 2,
+	"name": "custom/podcasts-list",
+	"title": "BLAC Buzzsprout Podcasts",
+	"category": "widgets",
+	"icon": "microphone",
+	"description": "A block to display Buzzsprout podcast episodes.",
+	"keywords": [
+		"podcast",
+		"episodes",
+		"audio",
+		"podcast episodes",
+		"buzzsprout"
+	],
+	"editorScript": "file:./block.js",
+	"render": "render_custom_podcast_block"
+}
