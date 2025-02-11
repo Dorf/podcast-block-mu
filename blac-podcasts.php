@@ -22,44 +22,40 @@ add_action( 'init', 'register_custom_podcast_block' );
  * Render callback function for the custom podcast block.
  */
 function render_custom_podcast_block( $attributes ) {
+    return '<p>Test output from BLAC Buzzsprout Podcasts block.</p>';
     // Define the Buzzsprout RSS feed URL.
     $feed_url = 'https://feeds.buzzsprout.com/2172386.rss';
 
-    // Use a simpler cache structure to avoid caching full SimplePie objects.
-    $cache_key = 'custom_podcast_feed';
-    $items_data = get_transient( $cache_key );
+    // For debugging, bypass the transient cache and fetch the feed every time.
+    $rss = fetch_feed( $feed_url );
+    if ( is_wp_error( $rss ) ) {
+        return '<p>Unable to fetch podcast episodes at this time.</p>';
+    }
+    $maxitems   = $rss->get_item_quantity( 10 );
+    $feed_items = $rss->get_items( 0, $maxitems );
 
-    if ( false === $items_data ) {
-        $rss = fetch_feed( $feed_url );
-        if ( is_wp_error( $rss ) ) {
-            return '<p>Unable to fetch podcast episodes at this time.</p>';
-        }
-        $maxitems = $rss->get_item_quantity( 10 ); // limit to 10 episodes
-        $feed_items = $rss->get_items( 0, $maxitems );
-
-        // Build a simple array with only the necessary data.
-        $items_data = array();
-        foreach ( $feed_items as $item ) {
-            $items_data[] = array(
-                'title'       => $item->get_title(),
-                'permalink'   => $item->get_permalink(),
-                'description' => $item->get_description(),
-                'audio'       => ( $item->get_enclosures() && ! empty( $item->get_enclosures() ) )
-                                    ? $item->get_enclosures()[0]->get_link()
-                                    : '',
-            );
-        }
-        // Cache the simplified data for one hour.
-        set_transient( $cache_key, $items_data, HOUR_IN_SECONDS );
+    // Build a simple array with only the necessary data.
+    $items_data = array();
+    foreach ( $feed_items as $item ) {
+        $items_data[] = array(
+            'title'       => $item->get_title(),
+            'permalink'   => $item->get_permalink(),
+            'description' => $item->get_description(),
+            'audio'       => ( $item->get_enclosures() && ! empty( $item->get_enclosures() ) )
+                                ? $item->get_enclosures()[0]->get_link()
+                                : '',
+        );
     }
 
     if ( empty( $items_data ) ) {
         return '<p>No episodes found.</p>';
     }
 
+    // For debugging, log the data to your error log.
+    error_log( print_r( $items_data, true ) );
+
     // Begin output – customize as needed.
     $output = '<div class="custom-podcast">';
-
     foreach ( $items_data as $item ) {
         $title       = esc_html( $item['title'] );
         $link        = esc_url( $item['permalink'] );
@@ -80,7 +76,6 @@ function render_custom_podcast_block( $attributes ) {
         $output .= '<a class="episode-link" href="' . $link . '">View on Buzzsprout</a>';
         $output .= '</div>';
     }
-
     $output .= '</div>';
 
     return $output;

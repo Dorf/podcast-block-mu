@@ -13,5 +13,11 @@
 		"buzzsprout"
 	],
 	"editorScript": "file:./block.js",
-	"render": "render_custom_podcast_block"
+	"render": "render_custom_podcast_block",
+	"editorScriptDependencies": [
+		"wp-blocks",
+		"wp-element",
+		"wp-i18n",
+		"wp-editor"
+	]
 }
